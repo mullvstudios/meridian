@@ -20,8 +20,8 @@ the remaining files Modrinth moderation will reject. Today that is 3 mod jars:
 
 | File | Fix |
 |---|---|
-| `refurbished_furniture`, `framework` (jars) | Furniture is MIT: use the Modrinth-hosted file (project `mrcrayfishs-furniture-mod-tools-refurbished`). Framework (its dependency) did not turn up in a Modrinth search: check its license, or ask the author |
-| `tfmg ... community.jar` | project `create-tfmg` (MIT-NON-AI) is on Modrinth: switch to its hosted file, or ask the author for the community build |
+| `refurbished_furniture`, `framework` (jars) | NOT on Modrinth (the Modrinth project `mrcrayfishs-furniture-mod-tools-refurbished` is a different addon, already in the pack). Licenses allow redistribution: Refurbished Furniture is MIT, Framework is LGPL-2.1 (MrCrayfish on GitHub). Allowed via Modrinth's "open-source license" rule; credit the authors and link the licenses |
+| `tfmg ... 1.2.3a-community.jar` | Modrinth only has TFMG up to 1.2.0 (license MIT-NON-AI, redistribution allowed). Source of the "community" 1.2.3a build and its license are unverified: confirm where it came from, or use Modrinth's 1.2.0 |
 
 The `.connector` cache folder is stripped automatically. Put replaced files into the pack's
 `modrinth.index.json` (re-export from the Modrinth App) and re-run.
