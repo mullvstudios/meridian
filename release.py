@@ -157,6 +157,9 @@ def main():
 
     changelog_path = ROOT / "versions" / a.version / "changelog.txt"
     if a.publish:
+        missing = [k for k in ("MODRINTH_TOKEN", "MODRINTH_PROJECT") if not os.environ.get(k)]
+        if missing:
+            sys.exit(f"--publish needs {' and '.join(missing)} set in the environment")
         if any(v["id"] == a.version for v in meta["versions"]):
             sys.exit(f"{a.version} is already in meta.json")
         if not changelog_path.exists() or "TODO" in changelog_path.read_text():
