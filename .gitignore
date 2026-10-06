@@ -2,3 +2,4 @@ dist/
 *.mrpack
 .remember/
 __pycache__/
+.env

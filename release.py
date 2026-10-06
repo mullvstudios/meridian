@@ -2,8 +2,7 @@
 """Verify, build and publish a Meridian release. Stdlib only.
 
   python3 release.py pv2o2b.mrpack                       # verify + build dist/Meridian-<version>.mrpack
-  MODRINTH_TOKEN=... MODRINTH_PROJECT=<id|slug> \\
-  python3 release.py pv2o2b.mrpack --publish
+  python3 release.py pv2o2b.mrpack --publish             # token/project from .env (see .env.example) or the environment
 
 Versions are calendar based: YYYY.MM for the monthly release, YYYY.MM.1, .2 ... for hotfixes in the
 same month. Omit the version and it is derived from today's date and meta.json.
@@ -38,6 +37,15 @@ def is_bundled_pack(name):
     Only the small top-level .txt shader settings stay. Modrinth-hosted packs listed in the index are unaffected."""
     return name.startswith(("overrides/shaderpacks/", "overrides/resourcepacks/")) and not (
         name.endswith(".txt") and name.count("/") == 2)
+
+
+def load_env():
+    """Read KEY=VALUE lines from .env (git-ignored); real environment variables win."""
+    p = ROOT / ".env"
+    for line in p.read_text().splitlines() if p.exists() else []:
+        k, sep, v = line.partition("=")
+        if sep and not line.lstrip().startswith("#"):
+            os.environ.setdefault(k.strip(), v.strip().strip("\"'"))
 
 
 def call(path, data=None, headers=None):
@@ -149,6 +157,7 @@ def main():
     ap.add_argument("--publish", action="store_true")
     ap.add_argument("--allow-unhosted", action="store_true", help="build anyway; Modrinth review will likely reject")
     a = ap.parse_args()
+    load_env()
     meta = json.loads((ROOT / "meta.json").read_text())
     a.version = a.version or next_version(meta)
     if not re.fullmatch(r"\d{4}\.(0[1-9]|1[0-2])(\.[1-9]\d*)?", a.version):

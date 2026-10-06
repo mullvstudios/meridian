@@ -1,0 +1,56 @@
+name: Release
+# Manual: builds the pack from a downloadable .mrpack, uploads it to Modrinth, records it in meta.json.
+# Needs repo secrets MODRINTH_TOKEN and (optionally) MODRINTH_PROJECT.
+# Commit versions/<version>/changelog.txt first. pack_url must NOT be a public link: the source
+# pack contains shader/resource packs that may not be redistributed (the build strips them).
+on:
+  workflow_dispatch:
+    inputs:
+      pack_url:
+        description: Direct (private/signed) download URL of the exported .mrpack
+        required: true
+      version:
+        description: YYYY.MM or YYYY.MM.N (empty = next free for this month)
+        required: false
+      update_type:
+        description: Update checker type (empty = default)
+        type: choice
+        options: ["", minor, minor_breaking, major, incompatible]
+        default: ""
+      channel:
+        type: choice
+        options: [release, beta, alpha]
+        default: release
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download pack
+        env:
+          PACK_URL: ${{ inputs.pack_url }}
+        run: |
+          echo "::add-mask::$PACK_URL"
+          curl -fsSL "$PACK_URL" -o source.mrpack
+      - name: Build and publish
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          MODRINTH_PROJECT: ${{ secrets.MODRINTH_PROJECT || 'meridian-mullv' }}
+          VERSION: ${{ inputs.version }}
+          UPDATE_TYPE: ${{ inputs.update_type }}
+          CHANNEL: ${{ inputs.channel }}
+        run: |
+          args=(--channel "$CHANNEL" --publish)
+          [ -n "$UPDATE_TYPE" ] && args+=(--type "$UPDATE_TYPE")
+          python3 release.py source.mrpack $VERSION "${args[@]}"
+      - name: Commit meta.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add meta.json
+          git commit -m "release: $(python3 -c "import json;print(json.load(open('meta.json'))['versions'][-1]['id'])")"
+          git push
