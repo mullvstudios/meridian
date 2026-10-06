@@ -1,0 +1,3 @@
+Meridian by mullv.studio
+Minecraft 1.21.1, NeoForge
+[Modrinth](https://modrinth.com/modpack/meridian)

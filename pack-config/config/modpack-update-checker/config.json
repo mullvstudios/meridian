@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 6,
+  "currentVersion": "{{VERSION}}",
+  "modpackName": "Meridian",
+  "modpackAuthor": "mullv.studio",
+  "modpackReleaseType": "stable",
+  "githubRepo": "https://raw.githubusercontent.com/mullvstudios/meridian/main/"
+}

@@ -1,0 +1,17 @@
+# Meridian 2026.10
+
+First public release of Meridian (Survival 2027). Updates ship monthly.
+
+## Highlights
+
+- Minecraft 1.21.1 on NeoForge 21.1.248.
+- Create with Steam 'n' Rails, Aeronautics, Sable physics, Big Cannons, Radar and Submarine.
+- Let's Do food mods, Farmer's Delight and addons, Exposure photography, Simple Voice Chat.
+- Sodium, Lithium, Distant Horizons and Iris with bundled shader packs.
+- Modpack Update Checker: future updates show their changelog in game.
+
+## Notes
+
+- Recommended: 8 GB or more RAM allocated.
+- The first launch is slower while Sinytra Connector prepares Fabric mods.
+- Back up your world before updating to any later version.
