@@ -1,14 +1,13 @@
 name: Release
 # Manual: builds the pack from a downloadable .mrpack, uploads it to Modrinth, records it in meta.json.
-# Needs repo secrets MODRINTH_TOKEN and (optionally) MODRINTH_PROJECT.
-# Commit versions/<version>/changelog.txt first. pack_url must NOT be a public link: the source
-# pack contains shader/resource packs that may not be redistributed (the build strips them).
+# Needs repo secrets MODRINTH_PACK_URL (private download link of the exported .mrpack), MODRINTH_TOKEN
+# and optionally MODRINTH_PROJECT. The URL is a secret, not an input, because workflow inputs are
+# shown on the (public) run page. Commit versions/<version>/changelog.txt first. The source pack
+# contains shader/resource packs that may not be redistributed (the build strips them), so never make
+# its link public.
 on:
   workflow_dispatch:
     inputs:
-      pack_url:
-        description: Direct (private/signed) download URL of the exported .mrpack
-        required: true
       version:
         description: YYYY.MM or YYYY.MM.N (empty = next free for this month)
         required: false
@@ -32,10 +31,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Download pack
         env:
-          PACK_URL: ${{ inputs.pack_url }}
+          PACK_URL: ${{ secrets.MODRINTH_PACK_URL }}
         run: |
           echo "::add-mask::$PACK_URL"
-          curl -fsSL "$PACK_URL" -o source.mrpack
+          curl -fsS --no-progress-meter "$PACK_URL" -o source.mrpack 2>/dev/null || { echo "download failed"; exit 1; }
       - name: Build and publish
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}

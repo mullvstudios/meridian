@@ -38,9 +38,10 @@ The `.connector` cache folder is stripped automatically. Put replaced files into
    `https://raw.githubusercontent.com/mullvstudios/meridian/main/meta.json`).
 3. Modrinth settings > PATs: token with "Create versions" (and "Read user data" if you want to test it).
    Locally: `cp .env.example .env` and fill in `MODRINTH_TOKEN` (`.env` is git-ignored; `release.py` reads it).
-   GitHub Actions: `gh secret set MODRINTH_TOKEN` in this repo, then run the "Release" workflow
-   (Actions tab) with a private download URL of the exported .mrpack. Never make that URL public:
-   the source pack bundles shaders/resource packs that may not be redistributed.
+   GitHub Actions: `gh secret set MODRINTH_TOKEN` and `gh secret set MODRINTH_PACK_URL` (private download link of
+   the exported .mrpack; a secret, not a workflow input, because inputs are visible on the public run page),
+   then run the "Release" workflow from the Actions tab. Never make that link public: the source pack
+   bundles shaders/resource packs that may not be redistributed.
 
 ## Releasing (monthly)
 
