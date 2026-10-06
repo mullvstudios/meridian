@@ -1,7 +1,7 @@
 # Meridian (Survival 2027)
 
 Release tooling and Modrinth assets for the mullv.studio Meridian modpack
-(Minecraft 1.21.1, NeoForge 21.1.248). Pattern copied from `mullvstudios/earthworks`.
+(Minecraft 1.21.1, NeoForge 21.1.256). Pattern copied from `mullvstudios/earthworks`.
 
 ```
 modrinth/       icon.png, banner.png (gallery), description.md, summary.txt  -> paste into Modrinth
@@ -50,11 +50,12 @@ The `.connector` cache folder is stripped automatically. Put replaced files into
 | File | Shader/resource packs | Use |
 |---|---|---|
 | `Meridian-<v>-powerful.mrpack` | Modrinth-hosted ones from the index (downloaded from Modrinth's CDN) | high-end PCs |
-| `Meridian-<v>-slowpc.mrpack` | none | low-end PCs (later: fewer mods, see `VARIANTS` in `release.py`) |
+| `Meridian-<v>-slowpc.mrpack` | none | low-end PCs: fewer mods, see `EXCLUDE` in `release.py` |
 | `Meridian-<v>.mrpack` | none | the build uploaded to Modrinth (`--publish`), or manually |
 
-Packs bundled in `overrides/` are never shipped in any of them. To make slowpc differ in mods later, extend
-`build()` with a per-variant exclude list.
+Packs bundled in `overrides/` are never shipped in any of them. slowpc drops the mods listed in `EXCLUDE` in
+`release.py` (matched on the start of the jar name; the build fails if a name stops matching). It keeps Iris,
+Colorwheel and AmbientSounds on purpose, and Distant Horizons (decide separately).
 
 ## Releasing (monthly)
 

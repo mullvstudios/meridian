@@ -1,8 +1,15 @@
 {
-  "schemaVersion": 6,
+  "schemaVersion": 9,
   "currentVersion": "{{VERSION}}",
   "modpackName": "Meridian",
-  "modpackAuthor": "mullv.studio",
+  "modpackAuthor": "MullVStudios",
   "modpackReleaseType": "stable",
-  "githubRepo": "https://raw.githubusercontent.com/mullvstudios/meridian/main/"
+  "updateCheckerId": "https://raw.githubusercontent.com/mullvstudios/meridian/main/",
+  "advanced": {
+    "bccEnabled": false,
+    "expandButton": false,
+    "updateCheckerType": 2,
+    "retroWarning": false,
+    "modpackMods": []
+  }
 }

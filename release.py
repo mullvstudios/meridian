@@ -36,8 +36,26 @@ PACK_DIRS = ("shaderpacks/", "resourcepacks/")
 # (the launcher downloads them from Modrinth's CDN). Packs bundled in overrides/ are never shipped.
 # "modrinth" has no packs at all (what Modrinth review accepts) and is what --publish uploads.
 VARIANTS = {"": False, "powerful": True, "slowpc": False}  # suffix -> keep_packs
+# Mod files left out of a variant, matched case-insensitively on the start of the jar name (so version bumps keep
+# matching). Each prefix must match at least one file, so a rename upstream fails the build instead of silently
+# shipping the mod. Measured in spark: Antique Atlas ~20% and Sound Physics ~5% of the render thread.
+EXCLUDE = {
+    "": ("spawn-4.0.7",),  # two Spawn versions are exported side by side; NeoForge loads 4.0.8 (drop this once removed from the pack)
+    "slowpc": (
+        "antique-atlas", "antique_transport",  # transport requires the atlas; Map Atlases stays
+        "sound-physics-",  # remastered + aeronautics
+        "entity_model_features", "entity_texture_features", "continuity", "polytone",  # only useful with resource packs
+        "fpsreducer", "lambdynamiclights", "create-dyn-light", "blur-neoforge", "eg-inventory-blur",
+        "enhancedvisuals", "immersivethunder",
+    ),
+}
 # Hosts Modrinth accepts in modrinth.index.json downloads.
 ALLOWED_HOSTS = {"cdn.modrinth.com", "github.com", "raw.githubusercontent.com", "gitlab.com"}
+# Never shipped: per-player state exported along with the pack (account ids, last world, old server list) and
+# FancyMenu media of unknown origin/licence (241 MB wav, 25 MB mp4) that would also bloat every build to 260 MB.
+PRIVATE = ("overrides/config/fancymenu/assets/background_music.wav", "overrides/config/fancymenu/assets/238264.mp4",
+           "overrides/fancymenu_data/buddy/", "overrides/fancymenu_data/last_world.fmdata",
+           "overrides/config/fancymenu/user_variables.db", "overrides/servers.dat_old")
 SKIP = "/.connector/"  # Sinytra Connector cache: regenerated on launch, not ours to redistribute
 
 
@@ -95,9 +113,21 @@ def ensure_update_checker(index):
     })
 
 
-def build(z, index, version, out, keep_packs=False):
+def excluded(index, prefixes):
+    """Index entries whose jar name starts with one of the prefixes; fails if a prefix matches nothing."""
+    hits = {p: [f for f in index["files"] if f["path"].split("/")[-1].lower().startswith(p)] for p in prefixes}
+    stale = [p for p, fs in hits.items() if not fs]
+    if stale:
+        sys.exit(f"EXCLUDE entries match no file in the pack (renamed or removed?): {', '.join(stale)}")
+    return {f["path"] for fs in hits.values() for f in fs}
+
+
+def build(z, index, version, out, keep_packs=False, exclude=()):
     index = copy.deepcopy(index)
     index.update(name=NAME, versionId=version)
+    if exclude:
+        gone = excluded(index, exclude)
+        index["files"] = [f for f in index["files"] if f["path"] not in gone]
     if not keep_packs:
         index["files"] = [f for f in index["files"] if not f["path"].startswith(PACK_DIRS)]
     ensure_update_checker(index)
@@ -108,7 +138,8 @@ def build(z, index, version, out, keep_packs=False):
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zo:
         for item in z.infolist():
             if (item.filename != "modrinth.index.json" and SKIP not in item.filename
-                    and not is_bundled_pack(item.filename, keep_packs) and item.filename not in extra):
+                    and not is_bundled_pack(item.filename, keep_packs) and item.filename not in extra
+                    and not item.filename.startswith(PRIVATE)):
                 zo.writestr(copy.copy(item), z.read(item.filename))
         zo.writestr("modrinth.index.json", json.dumps(index, indent=2))
         for name, text in extra.items():
@@ -218,7 +249,7 @@ def main():
     built = {}
     for suffix, keep in (VARIANTS.items() if a.github else [("", False)]):
         out = dist / f"{NAME}-{a.version}{'-' + suffix if suffix else ''}.mrpack"
-        build(z, index, a.version, out, keep)
+        build(z, index, a.version, out, keep, EXCLUDE[""] + EXCLUDE.get(suffix, ()))
         built[suffix] = out
         print(f"built {out.name} ({out.stat().st_size / 1e6:.0f} MB)")
     if a.github:

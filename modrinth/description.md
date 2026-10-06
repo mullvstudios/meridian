@@ -9,15 +9,15 @@ You start with a pickaxe and end up running railways, flying aircraft and buildi
 - **Exploration.** YUNG's Better structures, Dungeons and Taverns, Alex's Caves, Towns and Towers, Antique Atlas, Surveyor with Surveystones, and Waystones, so a long journey stays worth making.
 - **Photography and music.** Exposure with its camera addons, Immersive Melodies and Pipe Organs.
 - **Co-op survival.** Simple Voice Chat, Ping Wheel, Lootr, Better Combat, Take a Seat, and revive and corpse mechanics.
-- **Quality of life.** EMI, Jade, AppleSkin, Controlify, Mod Menu, Searchables and Better Advancements.
+- **Quality of life.** EMI, Jade, AppleSkin, Controlify, Mod Menu, and Searchables.
 - **Performance.** Sodium, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, Distant Horizons and Iris for shaders.
-- **Looks and sound.** A set of PBR and animation resource packs and several shader packs are bundled. Pick one under Options > Video Settings > Shader Packs.
+- **Looks and sound.** Iris is included, so you can add your own shader packs under Options > Video Settings > Shader Packs, and your own resource packs. FancyMenu provides a custom main menu.
 
 The full, always-current mod list is on the Versions tab: open any version and look at the dependencies and files.
 
 ## Requirements
 
-- Minecraft 1.21.1 and NeoForge 21.1.248 (the Modrinth App and most launchers set this up for you when you install the pack).
+- Minecraft 1.21.1 and NeoForge 21.1.256 (the Modrinth App and most launchers set this up for you when you install the pack).
 - 8 GB of RAM allocated is recommended, more for large bases and shaders. A modern GPU is recommended for shaders.
 - A few Fabric-only mods run through Sinytra Connector. The first launch is slower while it prepares them.
 
@@ -38,6 +38,6 @@ Meridian is the pack used on the official mullv.studio survival server. You can 
 
 ## Credits
 
-Every mod, resource pack and shader in Meridian belongs to its authors; the pack only bundles files that are published on Modrinth or that may be redistributed under their licenses. Thank you to all of them. Banner and icon artwork by mullv.studio.
+Every mod in Meridian belongs to its authors; the pack only includes files that are published on Modrinth or that may be redistributed under their licenses. Thank you to all of them. Banner and icon artwork by mullv.studio.
 
 Questions or bug reports: see the links on the right.
