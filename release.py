@@ -33,6 +33,13 @@ ALLOWED_HOSTS = {"cdn.modrinth.com", "github.com", "raw.githubusercontent.com", 
 SKIP = "/.connector/"  # Sinytra Connector cache: regenerated on launch, not ours to redistribute
 
 
+def is_bundled_pack(name):
+    """Shader/resource packs bundled in overrides/ are never shipped (redistribution not permitted).
+    Only the small top-level .txt shader settings stay. Modrinth-hosted packs listed in the index are unaffected."""
+    return name.startswith(("overrides/shaderpacks/", "overrides/resourcepacks/")) and not (
+        name.endswith(".txt") and name.count("/") == 2)
+
+
 def call(path, data=None, headers=None):
     req = urllib.request.Request(API + path, data=data, headers={"User-Agent": UA, **(headers or {})})
     with urllib.request.urlopen(req) as r:
@@ -40,12 +47,13 @@ def call(path, data=None, headers=None):
 
 
 def unhosted(z, index):
-    """Files Modrinth moderation would flag: bad download hosts, or override jars/zips not on Modrinth."""
+    """Files Modrinth moderation would flag: bad download hosts, or override jars/zips not on Modrinth
+    (bundled shader/resource packs are excluded from the build instead, see is_bundled_pack)."""
     bad = [f["path"] for f in index["files"] if not {u.split("/")[2] for u in f["downloads"]} <= ALLOWED_HOSTS]
     blobs = {
         hashlib.sha1(z.read(n)).hexdigest(): n
         for n in z.namelist()
-        if n.startswith("overrides/") and n.endswith((".jar", ".zip")) and SKIP not in n
+        if n.startswith("overrides/") and n.endswith((".jar", ".zip")) and SKIP not in n and not is_bundled_pack(n)
     }
     body = json.dumps({"hashes": list(blobs), "algorithm": "sha1"}).encode()
     known = call("/version_files", body, {"Content-Type": "application/json"}) if blobs else {}
@@ -77,7 +85,8 @@ def build(z, index, version, out):
     }
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zo:
         for item in z.infolist():
-            if item.filename != "modrinth.index.json" and SKIP not in item.filename and item.filename not in extra:
+            if (item.filename != "modrinth.index.json" and SKIP not in item.filename
+                    and not is_bundled_pack(item.filename) and item.filename not in extra):
                 zo.writestr(item, z.read(item.filename))
         zo.writestr("modrinth.index.json", json.dumps(index, indent=2))
         for name, text in extra.items():

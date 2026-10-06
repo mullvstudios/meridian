@@ -14,21 +14,21 @@ art/make_art.py regenerates icon/banner (change NAME, re-run)
 
 ## Before the first publish (blockers)
 
-`python3 release.py pv2o2b.mrpack` lists files Modrinth moderation will reject. Today that is 11:
+Bundled shader packs and resource packs (in `overrides/`) are never shipped: `release.py` strips them
+automatically (Modrinth-hosted ones listed in the index stay). `python3 release.py pv2o2b.mrpack` then lists
+the remaining files Modrinth moderation will reject. Today that is 3 mod jars:
 
 | File | Fix |
 |---|---|
 | `refurbished_furniture`, `framework` (jars) | Furniture is MIT: use the Modrinth-hosted file (project `mrcrayfishs-furniture-mod-tools-refurbished`). Framework (its dependency) did not turn up in a Modrinth search: check its license, or ask the author |
 | `tfmg ... community.jar` | project `create-tfmg` (MIT-NON-AI) is on Modrinth: switch to its hosted file, or ask the author for the community build |
-| `AVPBR Retextured`, `Visual Effects+`, `Eclipse Shader` | All Rights Reserved but hosted on Modrinth: use the Modrinth-hosted versions of the same files |
-| `Emanrux`, `iterationRP`, `iterationT`, `SEUS PTGI HRR` | Not on Modrinth: get the author's permission (screenshot into the project's Moderation tab) or drop them |
 
 The `.connector` cache folder is stripped automatically. Put replaced files into the pack's
 `modrinth.index.json` (re-export from the Modrinth App) and re-run.
 
 ## One-time setup
 
-1. Create the project on Modrinth (modpack, under the mullv.studio organization):
+1. (Done: the project already exists.) Project settings used (modpack, under the mullv.studio organization):
    title **Meridian**, slug `meridian`, summary from `modrinth/summary.txt`, body from
    `modrinth/description.md`, icon `modrinth/icon.png`, gallery `modrinth/banner.png` (featured),
    license MIT (or your choice), environment client + server, categories technology / adventure / multiplayer,
