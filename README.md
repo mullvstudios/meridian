@@ -7,7 +7,7 @@ Release tooling and Modrinth assets for the mullv.studio Meridian modpack
 modrinth/       icon.png, banner.png (gallery), description.md, summary.txt  -> paste into Modrinth
 pack-config/    files injected into overrides/ at build (Modpack Update Checker config)
 meta.json       Modpack Update Checker feed (grows one entry per release)
-versions/X.Y.Z/changelog.txt   one per release, also used as the Modrinth changelog
+versions/YYYY.MM/changelog.txt   one per release, also used as the Modrinth changelog
 release.py      verify + build + publish
 art/make_art.py regenerates icon/banner (change NAME, re-run)
 ```
