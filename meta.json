@@ -2,5 +2,16 @@
   "schemaVersion": 1,
   "requiresMpuc": 14,
   "hotfixesFormat": null,
-  "versions": []
+  "versions": [
+    {
+      "id": "2026.09",
+      "releasedAt": 1791291977957,
+      "updateType": "minor",
+      "promotions": {
+        "downloads": {
+          "generic": "https://github.com/mullvstudios/meridian/releases/tag/v2026.09"
+        }
+      }
+    }
+  ]
 }

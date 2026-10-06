@@ -43,6 +43,19 @@ The `.connector` cache folder is stripped automatically. Put replaced files into
    then run the "Release" workflow from the Actions tab. Never make that link public: the source pack
    bundles shaders/resource packs that may not be redistributed.
 
+## Builds / variants
+
+`python3 release.py <pack> <version> --github` builds three files and creates the GitHub release `v<version>`:
+
+| File | Shader/resource packs | Use |
+|---|---|---|
+| `Meridian-<v>-powerful.mrpack` | Modrinth-hosted ones from the index (downloaded from Modrinth's CDN) | high-end PCs |
+| `Meridian-<v>-slowpc.mrpack` | none | low-end PCs (later: fewer mods, see `VARIANTS` in `release.py`) |
+| `Meridian-<v>.mrpack` | none | the build uploaded to Modrinth (`--publish`), or manually |
+
+Packs bundled in `overrides/` are never shipped in any of them. To make slowpc differ in mods later, extend
+`build()` with a per-variant exclude list.
+
 ## Releasing (monthly)
 
 Calendar versioning: `YYYY.MM` for the monthly release (`2026.10`, `2026.11`, ...), `YYYY.MM.1`, `.2`

@@ -3,18 +3,21 @@
 
   python3 release.py pv2o2b.mrpack                       # verify + build dist/Meridian-<version>.mrpack
   python3 release.py pv2o2b.mrpack --publish             # token/project from .env (see .env.example) or the environment
+  python3 release.py pv2o2b.mrpack 2026.09 --github      # GitHub release: powerful + slowpc + no-packs (Modrinth) builds
 
 Versions are calendar based: YYYY.MM for the monthly release, YYYY.MM.1, .2 ... for hotfixes in the
 same month. Omit the version and it is derived from today's date and meta.json.
 
---publish uploads the build to Modrinth, then appends the version to meta.json
+--publish uploads the no-packs build to Modrinth, --github creates the GitHub release; both record the download in meta.json
 (read in game by Modpack Update Checker). Commit and push meta.json + versions/ afterwards.
 """
 import argparse
+import copy
 import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.parse
@@ -27,16 +30,22 @@ API = "https://api.modrinth.com/v2"
 UA = "mullvstudios/meridian release.py"
 NAME = "Meridian"
 PROJECT_URL = "https://modrinth.com/modpack/meridian-mullv"
+REPO = "mullvstudios/meridian"
+PACK_DIRS = ("shaderpacks/", "resourcepacks/")
+# GitHub release assets. keep_packs: keep the Modrinth-hosted shader/resource packs listed in the index
+# (the launcher downloads them from Modrinth's CDN). Packs bundled in overrides/ are never shipped.
+# "modrinth" has no packs at all (what Modrinth review accepts) and is what --publish uploads.
+VARIANTS = {"": False, "powerful": True, "slowpc": False}  # suffix -> keep_packs
 # Hosts Modrinth accepts in modrinth.index.json downloads.
 ALLOWED_HOSTS = {"cdn.modrinth.com", "github.com", "raw.githubusercontent.com", "gitlab.com"}
 SKIP = "/.connector/"  # Sinytra Connector cache: regenerated on launch, not ours to redistribute
 
 
-def is_bundled_pack(name):
+def is_bundled_pack(name, keep_settings=True):
     """Shader/resource packs bundled in overrides/ are never shipped (redistribution not permitted).
-    Only the small top-level .txt shader settings stay. Modrinth-hosted packs listed in the index are unaffected."""
+    Top-level .txt shader settings stay when keep_settings. Modrinth-hosted packs in the index are unaffected."""
     return name.startswith(("overrides/shaderpacks/", "overrides/resourcepacks/")) and not (
-        name.endswith(".txt") and name.count("/") == 2)
+        keep_settings and name.endswith(".txt") and name.count("/") == 2)
 
 
 def load_env():
@@ -86,8 +95,11 @@ def ensure_update_checker(index):
     })
 
 
-def build(z, index, version, out):
+def build(z, index, version, out, keep_packs=False):
+    index = copy.deepcopy(index)
     index.update(name=NAME, versionId=version)
+    if not keep_packs:
+        index["files"] = [f for f in index["files"] if not f["path"].startswith(PACK_DIRS)]
     ensure_update_checker(index)
     extra = {
         "overrides/" + p.relative_to(ROOT / "pack-config").as_posix(): p.read_text().replace("{{VERSION}}", version)
@@ -96,8 +108,8 @@ def build(z, index, version, out):
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zo:
         for item in z.infolist():
             if (item.filename != "modrinth.index.json" and SKIP not in item.filename
-                    and not is_bundled_pack(item.filename) and item.filename not in extra):
-                zo.writestr(item, z.read(item.filename))
+                    and not is_bundled_pack(item.filename, keep_packs) and item.filename not in extra):
+                zo.writestr(copy.copy(item), z.read(item.filename))
         zo.writestr("modrinth.index.json", json.dumps(index, indent=2))
         for name, text in extra.items():
             zo.writestr(name, text)
@@ -136,15 +148,29 @@ def next_version(meta):
     return v
 
 
-def bump_meta(version, update_type):
+def has_download(meta, version, key):
+    return any(v["id"] == version and key in v.get("promotions", {}).get("downloads", {}) for v in meta["versions"])
+
+
+def bump_meta(version, update_type, key, url):
+    """Record version in meta.json (created on first call) and add this download link to it."""
     p = ROOT / "meta.json"
     meta = json.loads(p.read_text())
-    entry = {"id": version, "releasedAt": int(time.time() * 1000)}
-    if update_type:
-        entry["updateType"] = update_type
-    entry["promotions"] = {"downloads": {"modrinth": PROJECT_URL}}
-    meta["versions"].append(entry)
+    entry = next((v for v in meta["versions"] if v["id"] == version), None)
+    if entry is None:
+        entry = {"id": version, "releasedAt": int(time.time() * 1000)}
+        if update_type:
+            entry["updateType"] = update_type
+        meta["versions"].append(entry)
+    entry.setdefault("promotions", {}).setdefault("downloads", {})[key] = url
     p.write_text(json.dumps(meta, indent=2) + "\n")
+
+
+def github_release(version, assets, notes):
+    tag = f"v{version}"
+    subprocess.run(["gh", "release", "create", tag, *map(str, assets), "--repo", REPO,
+                    "--title", f"{NAME} {version}", "--notes-file", str(notes)], check=True)
+    return f"https://github.com/{REPO}/releases/tag/{tag}"
 
 
 def main():
@@ -154,7 +180,8 @@ def main():
     ap.add_argument("--type", choices=["minor", "minor_breaking", "major", "incompatible"],
                     help="update type for Modpack Update Checker (default: minor for monthly, none for hotfix)")
     ap.add_argument("--channel", choices=["release", "beta", "alpha"], default="release")
-    ap.add_argument("--publish", action="store_true")
+    ap.add_argument("--publish", action="store_true", help="upload the no-packs build to Modrinth")
+    ap.add_argument("--github", action="store_true", help="build all variants and create the GitHub release")
     ap.add_argument("--allow-unhosted", action="store_true", help="build anyway; Modrinth review will likely reject")
     a = ap.parse_args()
     load_env()
@@ -169,8 +196,11 @@ def main():
         missing = [k for k in ("MODRINTH_TOKEN", "MODRINTH_PROJECT") if not os.environ.get(k)]
         if missing:
             sys.exit(f"--publish needs {' and '.join(missing)} set in the environment")
-        if any(v["id"] == a.version for v in meta["versions"]):
-            sys.exit(f"{a.version} is already in meta.json")
+        if has_download(meta, a.version, "modrinth"):
+            sys.exit(f"{a.version} is already published on Modrinth")
+    if a.github and has_download(meta, a.version, "generic"):
+        sys.exit(f"{a.version} already has a GitHub release")
+    if a.publish or a.github:
         if not changelog_path.exists() or "TODO" in changelog_path.read_text():
             sys.exit(f"write {changelog_path.relative_to(ROOT)} first (no TODO left in it)")
 
@@ -183,15 +213,24 @@ def main():
         if not a.allow_unhosted:
             sys.exit(1)
 
-    out = ROOT / "dist" / f"{NAME}-{a.version}.mrpack"
-    out.parent.mkdir(exist_ok=True)
-    build(z, index, a.version, out)
-    print(f"built {out} ({out.stat().st_size / 1e6:.0f} MB)")
-    if not a.publish:
-        return
-    v = upload(out, a.version, a.channel, changelog_path.read_text(), index)
-    bump_meta(a.version, a.type)
-    print(f"published {v['id']}; now commit + push meta.json and versions/{a.version}/")
+    dist = ROOT / "dist"
+    dist.mkdir(exist_ok=True)
+    built = {}
+    for suffix, keep in (VARIANTS.items() if a.github else [("", False)]):
+        out = dist / f"{NAME}-{a.version}{'-' + suffix if suffix else ''}.mrpack"
+        build(z, index, a.version, out, keep)
+        built[suffix] = out
+        print(f"built {out.name} ({out.stat().st_size / 1e6:.0f} MB)")
+    if a.github:
+        url = github_release(a.version, built.values(), changelog_path)
+        bump_meta(a.version, a.type, "generic", url)
+        print(f"GitHub release: {url}")
+    if a.publish:
+        v = upload(built[""], a.version, a.channel, changelog_path.read_text(), index)
+        bump_meta(a.version, a.type, "modrinth", PROJECT_URL)
+        print(f"published {v['id']} on Modrinth")
+    if a.github or a.publish:
+        print(f"now commit + push meta.json and versions/{a.version}/")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,16 @@
+# Meridian 2026.09
+
+First release of Meridian (Survival 2027): the September 2026 pack.
+
+## Downloads
+
+- **Meridian-2026.09-powerful.mrpack**: the full pack, including the shader and resource packs hosted on Modrinth.
+- **Meridian-2026.09-slowpc.mrpack**: the same mods without any shader or resource packs, for lower-end PCs.
+- **Meridian-2026.09.mrpack**: no shader or resource packs (same as the slowpc build for now); the build uploaded to Modrinth.
+
+## Notes
+
+- Minecraft 1.21.1, NeoForge 21.1.248. 8 GB or more RAM recommended.
+- The first launch is slower while Sinytra Connector prepares Fabric mods.
+- Shader packs and resource packs are not bundled in the files; powerful downloads the Modrinth-hosted ones at install.
+- Back up your world before updating.
