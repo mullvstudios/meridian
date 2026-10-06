@@ -29,7 +29,7 @@ The `.connector` cache folder is stripped automatically. Put replaced files into
 ## One-time setup
 
 1. (Done: the project already exists.) Project settings used (modpack, under the mullv.studio organization):
-   title **Meridian**, slug `meridian`, summary from `modrinth/summary.txt`, body from
+   title **Meridian**, slug `meridian-mullv`, summary from `modrinth/summary.txt`, body from
    `modrinth/description.md`, icon `modrinth/icon.png`, gallery `modrinth/banner.png` (featured),
    license MIT (or your choice), environment client + server, categories technology / adventure / multiplayer,
    source/issues links to the new GitHub repo.
@@ -52,7 +52,7 @@ hotfixes default to none.
 # 1. export the updated pack as .mrpack from the Modrinth App
 # 2. write versions/2026.11/changelog.txt   (version = this month, see `python3 release.py x.mrpack` output)
 # 3.
-export MODRINTH_TOKEN=... MODRINTH_PROJECT=meridian
+export MODRINTH_TOKEN=... MODRINTH_PROJECT=meridian-mullv
 python3 release.py new.mrpack --publish
 # 4. git add meta.json versions && git commit && git push   (in-game update notice goes live)
 ```

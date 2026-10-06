@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parent
 API = "https://api.modrinth.com/v2"
 UA = "mullvstudios/meridian release.py"
 NAME = "Meridian"
-PROJECT_URL = "https://modrinth.com/modpack/meridian"
+PROJECT_URL = "https://modrinth.com/modpack/meridian-mullv"
 # Hosts Modrinth accepts in modrinth.index.json downloads.
 ALLOWED_HOSTS = {"cdn.modrinth.com", "github.com", "raw.githubusercontent.com", "gitlab.com"}
 SKIP = "/.connector/"  # Sinytra Connector cache: regenerated on launch, not ours to redistribute
