@@ -48,6 +48,7 @@ def call(path, data=None, headers=None):
 
 def unhosted(z, index):
     """Files Modrinth moderation would flag: bad download hosts, or override jars/zips not on Modrinth
+    and not listed in allowed-overrides.txt
     (bundled shader/resource packs are excluded from the build instead, see is_bundled_pack)."""
     bad = [f["path"] for f in index["files"] if not {u.split("/")[2] for u in f["downloads"]} <= ALLOWED_HOSTS]
     blobs = {
@@ -57,7 +58,8 @@ def unhosted(z, index):
     }
     body = json.dumps({"hashes": list(blobs), "algorithm": "sha1"}).encode()
     known = call("/version_files", body, {"Content-Type": "application/json"}) if blobs else {}
-    return bad + [n for h, n in blobs.items() if h not in known]
+    allowed = {l.split("#")[0].strip() for l in (ROOT / "allowed-overrides.txt").read_text().splitlines()}
+    return bad + [n for h, n in blobs.items() if h not in known and n not in allowed]
 
 
 def ensure_update_checker(index):

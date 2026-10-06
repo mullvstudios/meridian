@@ -1,0 +1,5 @@
+# Override jars/zips that are NOT on Modrinth but may be shipped. One path per line, "# reason" after it.
+# Attach proof (license link or the author's reply screenshot) in the project's Moderation tab on Modrinth.
+overrides/mods/framework-neoforge-1.21.1-0.13.11.jar  # MrCrayfish Framework, LGPL-2.1; author permission
+overrides/mods/refurbished_furniture-neoforge-1.21.1-1.0.22.jar  # MrCrayfish Refurbished Furniture, MIT; author permission
+overrides/mods/tfmg-1.21.1-1.2.3a-community.jar  # Create: The Factory Must Grow community build, MIT-NON-AI; author permission
