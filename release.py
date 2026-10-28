@@ -3,7 +3,7 @@
 
   python3 release.py pv2o2b.mrpack                       # verify + build dist/Meridian-<version>.mrpack
   python3 release.py pv2o2b.mrpack --publish             # token/project from .env (see .env.example) or the environment
-  python3 release.py pv2o2b.mrpack 2026.09 --github      # GitHub release: powerful + slowpc + no-packs (Modrinth) builds
+  python3 release.py pv2o2b.mrpack 2026.09 --github      # GitHub release with the one build (add --draft to review it first)
 
 Versions are calendar based: YYYY.MM for the monthly release, YYYY.MM.1, .2 ... for hotfixes in the
 same month. Omit the version and it is derived from today's date and meta.json.
@@ -32,30 +32,22 @@ NAME = "Meridian"
 PROJECT_URL = "https://modrinth.com/modpack/meridian-mullv"
 REPO = "mullvstudios/meridian"
 PACK_DIRS = ("shaderpacks/", "resourcepacks/")
-# GitHub release assets. keep_packs: keep the Modrinth-hosted shader/resource packs listed in the index
-# (the launcher downloads them from Modrinth's CDN). Packs bundled in overrides/ are never shipped.
-# "modrinth" has no packs at all (what Modrinth review accepts) and is what --publish uploads.
-VARIANTS = {"": False, "powerful": True, "slowpc": False}  # suffix -> keep_packs
+# The one build shipped to GitHub and Modrinth, without shader/resource packs (what Modrinth review accepts).
+# keep_packs would keep the Modrinth-hosted packs listed in the index; packs bundled in overrides/ are never shipped.
+VARIANTS = {"": False}  # suffix -> keep_packs
 # Mod files left out of a variant, matched case-insensitively on the start of the jar name (so version bumps keep
 # matching). Each prefix must match at least one file, so a rename upstream fails the build instead of silently
-# shipping the mod. Measured in spark: Antique Atlas ~20% and Sound Physics ~5% of the render thread.
-EXCLUDE = {
-    "": ("spawn-4.0.7",),  # two Spawn versions are exported side by side; NeoForge loads 4.0.8 (drop this once removed from the pack)
-    "slowpc": (
-        "antique-atlas", "antique_transport",  # transport requires the atlas; Map Atlases stays
-        "sound-physics-",  # remastered + aeronautics
-        "entity_model_features", "entity_texture_features", "continuity", "polytone",  # only useful with resource packs
-        "fpsreducer", "lambdynamiclights", "create-dyn-light", "blur-neoforge", "eg-inventory-blur",
-        "enhancedvisuals", "immersivethunder",
-    ),
-}
+# shipping the mod.
+EXCLUDE = {"": ()}
 # Hosts Modrinth accepts in modrinth.index.json downloads.
 ALLOWED_HOSTS = {"cdn.modrinth.com", "github.com", "raw.githubusercontent.com", "gitlab.com"}
 # Never shipped: per-player state exported along with the pack (account ids, last world, old server list) and
 # FancyMenu media of unknown origin/licence (241 MB wav, 25 MB mp4) that would also bloat every build to 260 MB.
 PRIVATE = ("overrides/config/fancymenu/assets/background_music.wav", "overrides/config/fancymenu/assets/238264.mp4",
            "overrides/fancymenu_data/buddy/", "overrides/fancymenu_data/last_world.fmdata",
-           "overrides/config/fancymenu/user_variables.db", "overrides/servers.dat_old")
+           "overrides/config/fancymenu/user_variables.db", "overrides/servers.dat_old",
+           "overrides/.analoglib/",  # yt-dlp/ffmpeg downloaded at runtime (one is a half-finished .part)
+           "overrides/fancymenu_data/seamless_world_loading/")  # screenshot of the exporter's own world
 SKIP = "/.connector/"  # Sinytra Connector cache: regenerated on launch, not ours to redistribute
 
 
@@ -125,6 +117,7 @@ def excluded(index, prefixes):
 def build(z, index, version, out, keep_packs=False, exclude=()):
     index = copy.deepcopy(index)
     index.update(name=NAME, versionId=version)
+    index["files"] = [f for f in index["files"] if not f["path"].endswith(".disabled")]  # disabled mods never ship
     if exclude:
         gone = excluded(index, exclude)
         index["files"] = [f for f in index["files"] if f["path"] not in gone]
@@ -138,6 +131,7 @@ def build(z, index, version, out, keep_packs=False, exclude=()):
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zo:
         for item in z.infolist():
             if (item.filename != "modrinth.index.json" and SKIP not in item.filename
+                    and not item.filename.endswith(".disabled")
                     and not is_bundled_pack(item.filename, keep_packs) and item.filename not in extra
                     and not item.filename.startswith(PRIVATE)):
                 zo.writestr(copy.copy(item), z.read(item.filename))
@@ -197,10 +191,10 @@ def bump_meta(version, update_type, key, url):
     p.write_text(json.dumps(meta, indent=2) + "\n")
 
 
-def github_release(version, assets, notes):
+def github_release(version, assets, notes, draft=False):
     tag = f"v{version}"
     subprocess.run(["gh", "release", "create", tag, *map(str, assets), "--repo", REPO,
-                    "--title", f"{NAME} {version}", "--notes-file", str(notes)], check=True)
+                    "--title", f"{NAME} {version}", "--notes-file", str(notes), *(["--draft"] if draft else [])], check=True)
     return f"https://github.com/{REPO}/releases/tag/{tag}"
 
 
@@ -212,7 +206,8 @@ def main():
                     help="update type for Modpack Update Checker (default: minor for monthly, none for hotfix)")
     ap.add_argument("--channel", choices=["release", "beta", "alpha"], default="release")
     ap.add_argument("--publish", action="store_true", help="upload the no-packs build to Modrinth")
-    ap.add_argument("--github", action="store_true", help="build all variants and create the GitHub release")
+    ap.add_argument("--github", action="store_true", help="build the pack and create the GitHub release")
+    ap.add_argument("--draft", action="store_true", help="with --github: create it as a draft; publish it on GitHub before pushing meta.json")
     ap.add_argument("--allow-unhosted", action="store_true", help="build anyway; Modrinth review will likely reject")
     a = ap.parse_args()
     load_env()
@@ -253,7 +248,7 @@ def main():
         built[suffix] = out
         print(f"built {out.name} ({out.stat().st_size / 1e6:.0f} MB)")
     if a.github:
-        url = github_release(a.version, built.values(), changelog_path)
+        url = github_release(a.version, built.values(), changelog_path, a.draft)
         bump_meta(a.version, a.type, "generic", url)
         print(f"GitHub release: {url}")
     if a.publish:

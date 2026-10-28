@@ -43,19 +43,16 @@ The `.connector` cache folder is stripped automatically. Put replaced files into
    then run the "Release" workflow from the Actions tab. Never make that link public: the source pack
    bundles shaders/resource packs that may not be redistributed.
 
-## Builds / variants
+## Build
 
-`python3 release.py <pack> <version> --github` builds three files and creates the GitHub release `v<version>`:
+`python3 release.py <pack> <version> --github` builds `dist/Meridian-<v>.mrpack` and creates the GitHub release
+`v<version>` (add `--draft` to review it first; publish the draft before pushing `meta.json`). The same file is what
+`--publish` uploads to Modrinth. It has no shader/resource packs: packs bundled in `overrides/` are never shipped.
+Mods can be left out of the build with `EXCLUDE` in `release.py` (matched on the start of the jar name; the build
+fails if a name stops matching).
 
-| File | Shader/resource packs | Use |
-|---|---|---|
-| `Meridian-<v>-powerful.mrpack` | Modrinth-hosted ones from the index (downloaded from Modrinth's CDN) | high-end PCs |
-| `Meridian-<v>-slowpc.mrpack` | none | low-end PCs: fewer mods, see `EXCLUDE` in `release.py` |
-| `Meridian-<v>.mrpack` | none | the build uploaded to Modrinth (`--publish`), or manually |
-
-Packs bundled in `overrides/` are never shipped in any of them. slowpc drops the mods listed in `EXCLUDE` in
-`release.py` (matched on the start of the jar name; the build fails if a name stops matching). It keeps Iris,
-Colorwheel and AmbientSounds on purpose, and Distant Horizons (decide separately).
+`launcher/changelog.md` is the short text the in-game launcher menu fetches from
+`https://raw.githubusercontent.com/mullvstudios/meridian/main/launcher/changelog.md`. Edit and push it with each release.
 
 ## Releasing (monthly)
 
