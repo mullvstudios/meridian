@@ -22,6 +22,16 @@
           "generic": "https://github.com/mullvstudios/meridian/releases/tag/v2026.10"
         }
       }
+    },
+    {
+      "id": "2026.11",
+      "releasedAt": 1793218391679,
+      "updateType": "minor",
+      "promotions": {
+        "downloads": {
+          "generic": "https://github.com/mullvstudios/meridian/releases/tag/v2026.11"
+        }
+      }
     }
   ]
 }
