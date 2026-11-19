@@ -1,0 +1,25 @@
+# Meridian 2026.11.1
+
+NeoForge 21.1.267, about 60 mod updates and Let it Walk, walking machines for Create.
+
+## Added
+
+- Let it Walk 0.1.5.
+
+## Updated
+
+- NeoForge 21.1.265 -> 21.1.267.
+- Big version jumps: Supplementaries 4.1.3 (with Amendments 2.2.7 and Moonlight Lib 3.8.3), TFMG Community Edition 1.3.3a, Create: Radars 5.1.1, Create Deep Seas 3.4.8, Create Train Parts 0.6.0, Chunksmith 4.9.0, Curios 9.6.0, Mobile Networks 4.2.0, Not Enough Recipe Book 0.6.2, Ragdoll Corpse 0.4.0, Sable Player Ragdoll 0.8.1, Universal Sawmill 1.9.0, Lithosphere 1.9.
+- Friends & Foes 5.0.5, Waystones 21.1.47, Exposure 1.9.21, Immersive Melodies 0.8.4, Ecologics 2.3.11, Copycats 3.0.11, Connectible Chains 2.6.0, CC: Tweaked 1.121.0, Kotlin for Forge 5.13.0 and Dungeons Delight 1.5.2.
+- Client side: FancyMenu 3.10.0, WaterMedia 3.0.2, Euphoria Patcher 1.11.1, Entity Culling 1.12.1, Polytone 5.3.8, LightSpeedRe 2.0.6 and others.
+- Many smaller library and fix updates.
+
+## Download
+
+- **Meridian-2026.11.1.mrpack**: the full pack, also the build uploaded to Modrinth.
+
+## Notes
+
+- Minecraft 1.21.1, NeoForge 21.1.267. 8 GB or more RAM recommended.
+- Servers must update to the same mod versions and NeoForge 21.1.267.
+- Back up your world before updating.

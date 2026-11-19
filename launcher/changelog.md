@@ -1,8 +1,7 @@
-## Meridian 2026.11
+## Meridian 2026.11.1
 
-NeoForge 21.1.265 and about 65 mod updates, including Supplementaries 4.0.2, Friends and Foes 5.0.4, Create: Radars 5.0.2, Chunksmith 4.8.0 and the Let's Do mods.
+NeoForge 21.1.267 and about 60 mod updates, including Supplementaries 4.1.3, TFMG Community Edition 1.3.3a, Create: Radars 5.1.1, Chunksmith 4.9.0 and Mobile Networks 4.2.0.
 
-Added: Create: TFMG Community Edition, Fancy Entity Renderer.
-Removed: Reliable EMI, Too Many Recipe Viewers, Eating Animations, GroovyModLoader, Create Sable Dynamic Lights.
+Added: Let it Walk.
 
 Back up your world before you update.
